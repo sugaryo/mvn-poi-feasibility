@@ -107,7 +107,7 @@ public class ExcelWrapper implements AutoCloseable {
 	/** @inherit */
 	@Override
 	public void close() throws Exception {
-		
-		this.book.close();
+		//close は v3.10.1 時点では存在しない。
+		//this.book.close();
 	}
 }
