@@ -88,7 +88,7 @@ public class ExcelWrapper implements AutoCloseable {
 			return this.sheet( sheetname ).cell( row, col );
 			
 		}
-		// ■シート選択肢ない場合：
+		// ■シート選択しない場合：
 		else {
 			var sheet = this.book.getSheet( sheetname );
 			return new CellContext( sheet.getRow( row ).getCell( col ) );
