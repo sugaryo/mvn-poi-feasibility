@@ -180,7 +180,7 @@ public class ExcelWrapper implements AutoCloseable {
 	
 	public CellContext cell(final int row, final int col) {
 		
-		var xcell = this.xcell( row, col );
+		var xcell = this.xssfCell( row, col );
 		return new CellContext( xcell );
 	}
 	
@@ -210,22 +210,23 @@ public class ExcelWrapper implements AutoCloseable {
 		final String sheetname = xname.getSheetName();
 		this.sheet( sheetname );
 		
-		XSSFCell xcell1 = xcell( ref.getFirstCell() );
-		XSSFCell xcell2 = xcell( ref.getLastCell() );
+		XSSFCell xcell1 = this.xssfCell( ref.getFirstCell() );
+		XSSFCell xcell2 = this.xssfCell( ref.getLastCell() );
 		return new RangeContext( xcell1, xcell2 );
 	}
 
-
-	private XSSFCell xcell(CellReference ref) {
+	
+	
+	private XSSFCell xssfCell(CellReference ref) {
 		
 		// TODO：厳密指定するオプションを追加したほうが良いか？
 		int row = ref.isRowAbsolute() ? ref.getRow() : 0;
 		int col = ref.isColAbsolute() ? ref.getCol() : 0;
 		
-		return this.xcell( row, col );
+		return this.xssfCell( row, col );
 	}
 	
-	private XSSFCell xcell(final int row, final int col) {
+	private XSSFCell xssfCell(final int row, final int col) {
 		
 		XSSFRow xrow = this.current.getRow( row );
 		if ( null == xrow ) xrow = this.current.createRow( row );
