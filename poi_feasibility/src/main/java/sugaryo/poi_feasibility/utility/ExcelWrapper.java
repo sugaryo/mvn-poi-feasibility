@@ -1,10 +1,15 @@
 package sugaryo.poi_feasibility.utility;
 
 import static sugaryo.poi_feasibility.utility.PoiUtil.serialize;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static sugaryo.poi_feasibility.utility.PoiUtil.output;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -45,7 +50,99 @@ public class ExcelWrapper implements AutoCloseable {
 			this.xcell1 = xcell1;
 			this.xcell2 = xcell2;
 		}
+
 		
+		public RangeContext clearRows() {
+			
+			final XSSFSheet sheet = this.xcell1.getSheet();
+			final int row1 = this.xcell1.getRowIndex();
+			final int row2 = this.xcell2.getRowIndex();
+			final int n = row2 - row1 + 1; // 植木算
+			
+			
+			// ■先に範囲内に含まれる結合セルを解除。
+			List<CellRangeAddress> regions = sheet.getMergedRegions();
+			List<Integer> unmerges = new ArrayList<>();
+			for ( int i = 0; i < regions.size(); i++ ) {
+				var region = regions.get(i);
+				
+				// 行範囲内に内包している結合セルを解除。
+				// （引っ掛かってるやつも対象にして良い気がするけど、そうなるケースってそもそも名前定義の範囲が良くない）
+				if ( row1 <= region.getFirstRow() && region.getLastRow() <= row2 ) {
+					unmerges.add(i);
+				}
+			}
+			sheet.removeMergedRegions( unmerges );
+			
+			
+			// ■範囲内の行データを削除。（Rowが消えるのでRowオブジェクトは再度createする）
+			for ( int i = 0; i < n; i++ ) {
+				int row = row1 + i;
+				var xrow = sheet.getRow( row );
+				sheet.removeRow( xrow );
+				sheet.createRow( row );
+			}
+			
+			return this;
+		}
+		public RangeContext hideRows() {
+
+			final XSSFSheet sheet = this.xcell1.getSheet();
+			final int row1 = this.xcell1.getRowIndex();
+			final int row2 = this.xcell2.getRowIndex();
+			final int n = row2 - row1 + 1; // 植木算
+			
+			for ( int i = 0; i < n; i++ ) {
+				int row = row1 + i;
+				var xrow = sheet.getRow( row );
+				xrow.setZeroHeight( true );
+			}
+			
+			return this;
+		}
+		
+		public RangeContext insertRows() {
+			return this.insertRows( false );
+		}
+		public RangeContext insertRows( boolean withCopy ) {
+			throw new RuntimeException( "まだつくってないよ" ); // TODO：実装
+		}
+		
+		public RangeContext deleteRows() {
+
+			final XSSFSheet sheet = this.xcell1.getSheet();
+			final int row1 = this.xcell1.getRowIndex();
+			final int row2 = this.xcell2.getRowIndex();
+			final int n = row2 - row1 + 1; // 植木算
+			
+			
+			// ■先に範囲内に含まれる結合セルを解除。
+			var regions = sheet.getMergedRegions();
+			List<Integer> unmerges = new ArrayList<>();
+			for ( int i = 0; i < regions.size(); i++ ) {
+				var region = regions.get(i);
+				
+				// 行範囲内に内包している結合セルを解除。
+				// （引っ掛かってるやつも対象にして良い気がするけど、そうなるケースってそもそも名前定義の範囲が良くない）
+				if ( row1 <= region.getFirstRow() && region.getLastRow() <= row2 ) {
+					unmerges.add(i);
+				}
+			}
+			sheet.removeMergedRegions( unmerges );
+			
+			
+			// ■範囲内の行データを削除。
+			for ( int i = 0; i < n; i++ ) {
+				int row = row1 + i;
+				var xrow = sheet.getRow( row );
+				sheet.removeRow( xrow );
+			}
+			
+			// ■消して空いた領域に行シフト。
+			sheet.shiftRows( row2 + 1, sheet.getLastRowNum(), -n );
+
+			return this;
+		}
 	}
 	
 	
