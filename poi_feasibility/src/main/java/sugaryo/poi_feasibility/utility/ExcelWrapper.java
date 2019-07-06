@@ -168,6 +168,12 @@ public class ExcelWrapper implements AutoCloseable {
 		return this;
 	}
 	
+
+	public boolean exists(String name) {
+		return null != this.book.getName( name );
+	}
+	
+	
 	public CellContext cell(final int row, final int col) {
 		
 		var xrow = this.current.getRow( row );
