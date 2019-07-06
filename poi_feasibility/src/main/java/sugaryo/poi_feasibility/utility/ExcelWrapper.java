@@ -12,6 +12,7 @@ import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -53,8 +54,9 @@ public class ExcelWrapper implements AutoCloseable {
 
 		
 		public RangeContext clearRows() {
+
+			final XSSFSheet sheet = ExcelWrapper.this.current;
 			
-			final XSSFSheet sheet = this.xcell1.getSheet();
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
@@ -87,7 +89,8 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		public RangeContext hideRows() {
 
-			final XSSFSheet sheet = this.xcell1.getSheet();
+			final XSSFSheet sheet = ExcelWrapper.this.current;
+			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
@@ -109,8 +112,9 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		public RangeContext deleteRows() {
-
-			final XSSFSheet sheet = this.xcell1.getSheet();
+			
+			final XSSFSheet sheet = ExcelWrapper.this.current;
+			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
@@ -176,21 +180,12 @@ public class ExcelWrapper implements AutoCloseable {
 	
 	public CellContext cell(final int row, final int col) {
 		
-		var xrow = this.current.getRow( row );
-		if ( null == xrow ) xrow = this.current.createRow( row );
-		
-		var xcell = xrow.getCell( col );
-		if ( null == xcell ) xcell = xrow.createCell( col );
-		
+		var xcell = this.xcell( row, col );
 		return new CellContext( xcell );
 	}
 	
 	
 	public CellContext cell(String name) {
-		return this.cell( name, true );
-	}
-	
-	public CellContext cell(String name, boolean withSheetSelect) {
 		
 		// 名前定義から [SheetName, Row, Column] を取得。
 		var xname = this.book.getName( name );
@@ -200,26 +195,12 @@ public class ExcelWrapper implements AutoCloseable {
 		final int row = ref.getRow();
 		final int col = ref.getCol();
 		
-		
-		// ■シート選択する場合：
-		if ( withSheetSelect ) {
-			
-			return this.sheet( sheetname ).cell( row, col );
-			
-		}
-		// ■シート選択しない場合：
-		else {
-			var sheet = this.book.getSheet( sheetname );
-			return new CellContext( sheet.getRow( row ).getCell( col ) );
-		}
+		// シート選択してセル選択してContextを返す。
+		return this.sheet( sheetname ).cell( row, col );
 	}
 	
 	
 	public RangeContext range(String name) {
-		return this.range( name, true );
-	}
-	
-	public RangeContext range(String name, boolean withSheetSelect) {
 		
 		// 名前定義から [SheetName, Row, Column] を取得。
 		var xname = this.book.getName( name );
@@ -227,32 +208,34 @@ public class ExcelWrapper implements AutoCloseable {
 		
 		
 		final String sheetname = xname.getSheetName();
+		this.sheet( sheetname );
 		
-		// ■シート選択する場合：
-		if ( withSheetSelect ) {
-			
-			this.sheet( sheetname );
-		}
-		
-		return this.range( this.book, ref );
-	}
-
-	private RangeContext range(XSSFWorkbook book, AreaReference ref) {
-		var xcell1 = xcell( book, ref.getFirstCell() );
-		var xcell2 = xcell( book, ref.getLastCell() );
+		XSSFCell xcell1 = xcell( ref.getFirstCell() );
+		XSSFCell xcell2 = xcell( ref.getLastCell() );
 		return new RangeContext( xcell1, xcell2 );
 	}
-	
-	private static XSSFCell xcell(XSSFWorkbook book, CellReference ref) {
-		var sheet = book.getSheet( ref.getSheetName() );
-		
+
+
+	private XSSFCell xcell(CellReference ref) {
 		
 		// TODO：厳密指定するオプションを追加したほうが良いか？
-		var xrow = sheet.getRow( ref.isRowAbsolute() ? ref.getRow() : 0 );
-		var xcell = xrow.getCell( ref.isColAbsolute() ? ref.getCol() : 0 );
+		int row = ref.isRowAbsolute() ? ref.getRow() : 0;
+		int col = ref.isColAbsolute() ? ref.getCol() : 0;
+		
+		return this.xcell( row, col );
+	}
+	
+	private XSSFCell xcell(final int row, final int col) {
+		
+		XSSFRow xrow = this.current.getRow( row );
+		if ( null == xrow ) xrow = this.current.createRow( row );
+		
+		XSSFCell xcell = xrow.getCell( col );
+		if ( null == xcell ) xcell = xrow.createCell( col );
 		
 		return xcell;
 	}
+	
 	
 	
 	public byte[] binary() {
