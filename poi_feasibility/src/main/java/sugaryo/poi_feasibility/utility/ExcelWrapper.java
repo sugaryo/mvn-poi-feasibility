@@ -85,7 +85,11 @@ public class ExcelWrapper implements AutoCloseable {
 			for ( int i = 0; i < n; i++ ) {
 				int row = row1 + i;
 				var xrow = sheet.getRow( row );
-				sheet.removeRow( xrow );
+				// 行オブジェクトがあれば remove する。
+				// ※ テンプレート上でデータがない場合は行オブジェクト自体いない事もある
+				if ( null != xrow ) {
+					sheet.removeRow( xrow );
+				}
 				sheet.createRow( row );
 			}
 			
@@ -143,7 +147,12 @@ public class ExcelWrapper implements AutoCloseable {
 			for ( int i = 0; i < n; i++ ) {
 				int row = row1 + i;
 				var xrow = sheet.getRow( row );
-				sheet.removeRow( xrow );
+				
+				// 行オブジェクトがあれば remove する。
+				// ※ テンプレート上でデータがない場合は行オブジェクト自体いない事もある
+				if ( null != xrow ) {
+					sheet.removeRow( xrow );
+				}
 			}
 			
 			// ■消して空いた領域に行シフト。
