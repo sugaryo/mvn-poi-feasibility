@@ -199,6 +199,13 @@ public class ExcelWrapper implements AutoCloseable {
 		return this.sheet( sheetname ).cell( row, col );
 	}
 	
+
+	public RangeContext range( int r1, int c1, int r2, int c2 ) {
+
+		XSSFCell xcell1 = this.xssfCell( r1, c1 );
+		XSSFCell xcell2 = this.xssfCell( r2, c2 );
+		return new RangeContext( xcell1, xcell2 );
+	}
 	
 	public RangeContext range(String name) {
 		
