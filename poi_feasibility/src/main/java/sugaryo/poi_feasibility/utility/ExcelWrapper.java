@@ -25,6 +25,8 @@ public class ExcelWrapper implements AutoCloseable {
 	private XSSFSheet current;
 	
 	public class CellContext {
+
+		//FIXME：エンクロージングインスタンスthis.currentを見るよりは、Context毎にシートを焼き付けたほうが良いのでは？
 		
 		private final XSSFCell xcell;
 		
@@ -43,6 +45,8 @@ public class ExcelWrapper implements AutoCloseable {
 	}
 	
 	public class RangeContext {
+		
+		//FIXME：エンクロージングインスタンスthis.currentを見るよりは、Context毎にシートを焼き付けたほうが良いのでは？
 		
 		private final XSSFCell xcell1;
 		private final XSSFCell xcell2;
