@@ -240,8 +240,10 @@ public class ExcelWrapper implements AutoCloseable {
 	private static XSSFCell xcell(XSSFWorkbook book, CellReference ref) {
 		var sheet = book.getSheet( ref.getSheetName() );
 		
-		var xrow = sheet.getRow( ref.getRow() );
-		var xcell = xrow.getCell( ref.getCol() );
+		
+		// TODO：厳密指定するオプションを追加したほうが良いか？
+		var xrow = sheet.getRow( ref.isRowAbsolute() ? ref.getRow() : 0 );
+		var xcell = xrow.getCell( ref.isColAbsolute() ? ref.getCol() : 0 );
 		
 		return xcell;
 	}
