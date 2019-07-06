@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
 
 public class PoiUtil {
 	
@@ -70,7 +69,7 @@ public class PoiUtil {
 		
 		final byte[] bin = read( path );
 		try ( var stream = new ByteArrayInputStream( bin ) ) {
-			return (XSSFWorkbook)XSSFWorkbookFactory.create( stream );
+			return new XSSFWorkbook( stream );
 		}
 		// 検査例外は RuntimeException でラップしてスローする。
 		catch ( Exception ex ) {
