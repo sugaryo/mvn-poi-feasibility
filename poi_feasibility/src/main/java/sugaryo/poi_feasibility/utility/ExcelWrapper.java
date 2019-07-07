@@ -133,6 +133,12 @@ public class ExcelWrapper implements AutoCloseable {
 			final int n = row2 - row1 + 1; // 植木算
 			
 			
+			// ■シフト処理：
+			
+			// コピー先の領域を確保する。
+			this.sheet.shiftRows( row2 + 1, sheet.getLastRowNum(), n * count );
+			
+			
 			// ■コピー処理：
 			
 			// コピー元行に内包する結合セル範囲を抽出する。
