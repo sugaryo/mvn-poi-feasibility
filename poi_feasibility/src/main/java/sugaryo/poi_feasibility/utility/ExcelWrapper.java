@@ -196,12 +196,13 @@ public class ExcelWrapper implements AutoCloseable {
 			final int col2 = srcRow.getLastCellNum();
 			for ( int col = col1; col <= col2; col++ ) {
 				
-				// コピー元行にセルがあれば対応位置にセルを作ってスタイルをコピー。
+				// コピー元行にセルがあれば対応位置にセルを作ってコピー。
 				var srcCell = srcRow.getCell( col );
 				if ( null != srcCell ) {
 					
 					var dstCell = dstRow.createCell( col );
 					dstCell.setCellStyle( srcCell.getCellStyle() );
+					//TODO：cell-value のコピー処理も追加。
 				}
 			}
 		}
