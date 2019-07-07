@@ -24,14 +24,14 @@ public class ExcelWrapper implements AutoCloseable {
 	
 	private XSSFSheet current;
 	
-	public class CellContext {
+	public static class CellContext {
 
-		//FIXME：エンクロージングインスタンスthis.currentを見るよりは、Context毎にシートを焼き付けたほうが良いのでは？
-		
+		private final XSSFSheet sheet;
 		private final XSSFCell xcell;
 		
 		private CellContext(XSSFCell xcell) {
 			this.xcell = xcell;
+			this.sheet = xcell.getSheet();
 		}
 		
 		public int row() {
@@ -51,30 +51,28 @@ public class ExcelWrapper implements AutoCloseable {
 		// TODO：他にもユーティリティを追加。
 	}
 	
-	public class RangeContext {
+	public static class RangeContext {
 		
-		//FIXME：エンクロージングインスタンスthis.currentを見るよりは、Context毎にシートを焼き付けたほうが良いのでは？
-		
+		private final XSSFSheet sheet;
 		private final XSSFCell xcell1;
 		private final XSSFCell xcell2;
 		
 		public RangeContext(XSSFCell xcell1, XSSFCell xcell2) {
 			this.xcell1 = xcell1;
 			this.xcell2 = xcell2;
+			this.sheet = xcell1.getSheet();
 		}
 
 		
 		public RangeContext clearRows() {
 
-			final XSSFSheet sheet = ExcelWrapper.this.current;
-			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
 			
 			
 			// ■先に範囲内に含まれる結合セルを解除。
-			List<CellRangeAddress> regions = sheet.getMergedRegions();
+			List<CellRangeAddress> regions = this.sheet.getMergedRegions();
 			List<Integer> unmerges = new ArrayList<>();
 			for ( int i = 0; i < regions.size(); i++ ) {
 				var region = regions.get(i);
@@ -85,27 +83,25 @@ public class ExcelWrapper implements AutoCloseable {
 					unmerges.add(i);
 				}
 			}
-			sheet.removeMergedRegions( unmerges );
+			this.sheet.removeMergedRegions( unmerges );
 			
 			
 			// ■範囲内の行データを削除。（Rowが消えるのでRowオブジェクトは再度createする）
 			for ( int i = 0; i < n; i++ ) {
 				int row = row1 + i;
-				var xrow = sheet.getRow( row );
+				var xrow = this.sheet.getRow( row );
 				// 行オブジェクトがあれば remove する。
 				// ※ テンプレート上でデータがない場合は行オブジェクト自体いない事もある
 				if ( null != xrow ) {
-					sheet.removeRow( xrow );
+					this.sheet.removeRow( xrow );
 				}
-				sheet.createRow( row );
+				this.sheet.createRow( row );
 			}
 			
 			return this;
 		}
 		public RangeContext hideRows() {
 
-			final XSSFSheet sheet = ExcelWrapper.this.current;
-			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
@@ -128,15 +124,13 @@ public class ExcelWrapper implements AutoCloseable {
 		
 		public RangeContext deleteRows() {
 			
-			final XSSFSheet sheet = ExcelWrapper.this.current;
-			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
 			
 			
 			// ■先に範囲内に含まれる結合セルを解除。
-			var regions = sheet.getMergedRegions();
+			var regions = this.sheet.getMergedRegions();
 			List<Integer> unmerges = new ArrayList<>();
 			for ( int i = 0; i < regions.size(); i++ ) {
 				var region = regions.get(i);
@@ -147,23 +141,23 @@ public class ExcelWrapper implements AutoCloseable {
 					unmerges.add(i);
 				}
 			}
-			sheet.removeMergedRegions( unmerges );
+			this.sheet.removeMergedRegions( unmerges );
 			
 			
 			// ■範囲内の行データを削除。
 			for ( int i = 0; i < n; i++ ) {
 				int row = row1 + i;
-				var xrow = sheet.getRow( row );
+				var xrow = this.sheet.getRow( row );
 				
 				// 行オブジェクトがあれば remove する。
 				// ※ テンプレート上でデータがない場合は行オブジェクト自体いない事もある
 				if ( null != xrow ) {
-					sheet.removeRow( xrow );
+					this.sheet.removeRow( xrow );
 				}
 			}
 			
 			// ■消して空いた領域に行シフト。
-			sheet.shiftRows( row2 + 1, sheet.getLastRowNum(), -n );
+			this.sheet.shiftRows( row2 + 1, this.sheet.getLastRowNum(), -n );
 
 			return this;
 		}
