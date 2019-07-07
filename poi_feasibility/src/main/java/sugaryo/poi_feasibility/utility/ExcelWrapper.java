@@ -136,7 +136,7 @@ public class ExcelWrapper implements AutoCloseable {
 			// ■コピー処理：
 			
 			// コピー元行に内包する結合セル範囲を抽出する。
-			CellRangeAddress[] srcMergeAreas = this.sheet
+			var srcMergeAreas = this.sheet
 					.getMergedRegions()
 					.stream()
 					.filter( x -> row1 <= x.getFirstRow() && x.getLastRow() <= row2 )
@@ -149,7 +149,7 @@ public class ExcelWrapper implements AutoCloseable {
 				final int shift = c * n;   // count ループによるシフト値（ループインデックスｃ * コピー元領域の行数ｎ）
 				
 				
-				// コピー元領域（行数ｎ）だけループして１行ずつコピーする。
+				// ■■コピー元領域（行数ｎ）だけループして１行ずつコピーする。
 				for ( int i = 0; i < n; i++ ) {
 					
 					final int src = row1 + i;         // コピー基準行
@@ -158,21 +158,22 @@ public class ExcelWrapper implements AutoCloseable {
 					this.copyRow( src, dst );
 				}
 				
-				// コピー元領域にあった結合セル範囲にあわせて MergedCell を作成する。
+				// ■■コピー元領域にあった結合セル範囲にあわせて MergedCell を作成する。
+				
+				// dy = n + shift
+				//    = n + ( c * n )
+				//    = n * ( c + 1 )    ※ c は count ループのインデックスなので (c+1) はループ回数に等しい。
+				final int dy = n + shift;
 				for ( CellRangeAddress srcMerge : srcMergeAreas ) {
-					
-					// 列位置は変わらないので、行位置だけ補正してやる。
+
 					CellRangeAddress dstMerge = srcMerge.copy();
 					final int mr1 = dstMerge.getFirstRow();
 					final int mr2 = dstMerge.getLastRow();
 					
-					final int dy = n + shift; // n + shift = n + ( c * n ) = n * ( c + 1 )
-					
+					// 列位置は変わらないので、行位置だけ補正してやる。
 					dstMerge.setFirstRow( mr1 + dy );
 					dstMerge.setLastRow( mr2 + dy );
-					
 					this.sheet.addMergedRegion( dstMerge );
-					
 				}
 			}
 			
@@ -181,8 +182,8 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 
 		private void copyRow( final int src, final int dst ) {
-			XSSFRow srcRow = this.sheet.getRow( src );
-			XSSFRow dstRow = this.sheet.createRow( dst );
+			var srcRow = this.sheet.getRow( src );
+			var dstRow = this.sheet.createRow( dst );
 			
 			// セルを取得。
 			final int col1 = srcRow.getFirstCellNum();
@@ -190,10 +191,10 @@ public class ExcelWrapper implements AutoCloseable {
 			for ( int col = col1; col <= col2; col++ ) {
 				
 				// コピー元行にセルがあれば対応位置にセルを作ってスタイルをコピー。
-				XSSFCell srcCell = srcRow.getCell( col );
+				var srcCell = srcRow.getCell( col );
 				if ( null != srcCell ) {
 					
-					XSSFCell dstCell = dstRow.createCell( col );
+					var dstCell = dstRow.createCell( col );
 					dstCell.setCellStyle( srcCell.getCellStyle() );
 				}
 			}
