@@ -115,11 +115,88 @@ public class ExcelWrapper implements AutoCloseable {
 			return this;
 		}
 		
-		public RangeContext insertRows() {
-			return this.insertRows( false );
+		public RangeContext insertRows( int count ) {
+
+			final int row1 = this.xcell1.getRowIndex();
+			final int row2 = this.xcell2.getRowIndex();
+			final int n = row2 - row1 + 1; // 植木算
+			
+			// この領域の上に、指定個数ぶんの空行を作る（シフトして場所を開けるだけ）
+			this.sheet.shiftRows( row1, sheet.getLastRowNum(), n * count );
+			
+			return this;
 		}
-		public RangeContext insertRows( boolean withCopy ) {
-			throw new RuntimeException( "まだつくってないよ" ); // TODO：実装
+		public RangeContext copyRows( int count ) {
+
+			final int row1 = this.xcell1.getRowIndex();
+			final int row2 = this.xcell2.getRowIndex();
+			final int n = row2 - row1 + 1; // 植木算
+			
+			
+			// ■コピー処理：
+			
+			// コピー元行に内包する結合セル範囲を抽出する。
+			CellRangeAddress[] srcMergeAreas = this.sheet
+					.getMergedRegions()
+					.stream()
+					.filter( x -> row1 <= x.getFirstRow() && x.getLastRow() <= row2 )
+					.toArray( CellRangeAddress[]::new );
+			
+			// 指定回数（count）コピーを繰り返す。
+			for ( int c = 0; c < count; c++ ) {
+				
+				final int base = row2 + 1; // コピー先 dst の基準行     （コピー元領域の最終行 row2 のひとつ下）
+				final int shift = c * n;   // count ループによるシフト値（ループインデックスｃ * コピー元領域の行数ｎ）
+				
+				
+				// コピー元領域（行数ｎ）だけループして１行ずつコピーする。
+				for ( int i = 0; i < n; i++ ) {
+					
+					final int src = row1 + i;         // コピー基準行
+					final int dst = base + i + shift; // コピー対象行
+					
+					this.copyRow( src, dst );
+				}
+				
+				// コピー元領域にあった結合セル範囲にあわせて MergedCell を作成する。
+				for ( CellRangeAddress srcMerge : srcMergeAreas ) {
+					
+					// 列位置は変わらないので、行位置だけ補正してやる。
+					CellRangeAddress dstMerge = srcMerge.copy();
+					final int mr1 = dstMerge.getFirstRow();
+					final int mr2 = dstMerge.getLastRow();
+					
+					final int dy = n + shift; // n + shift = n + ( c * n ) = n * ( c + 1 )
+					
+					dstMerge.setFirstRow( mr1 + dy );
+					dstMerge.setLastRow( mr2 + dy );
+					
+					this.sheet.addMergedRegion( dstMerge );
+					
+				}
+			}
+			
+			
+			return this;
+		}
+
+		private void copyRow( final int src, final int dst ) {
+			XSSFRow srcRow = this.sheet.getRow( src );
+			XSSFRow dstRow = this.sheet.createRow( dst );
+			
+			// セルを取得。
+			final int col1 = srcRow.getFirstCellNum();
+			final int col2 = srcRow.getLastCellNum();
+			for ( int col = col1; col <= col2; col++ ) {
+				
+				// コピー元行にセルがあれば対応位置にセルを作ってスタイルをコピー。
+				XSSFCell srcCell = srcRow.getCell( col );
+				if ( null != srcCell ) {
+					
+					XSSFCell dstCell = dstRow.createCell( col );
+					dstCell.setCellStyle( srcCell.getCellStyle() );
+				}
+			}
 		}
 		
 		public RangeContext deleteRows() {
