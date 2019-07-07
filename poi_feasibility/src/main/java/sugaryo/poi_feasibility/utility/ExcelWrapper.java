@@ -34,6 +34,13 @@ public class ExcelWrapper implements AutoCloseable {
 			this.xcell = xcell;
 		}
 		
+		public int row() {
+			return this.xcell.getRowIndex();
+		}
+		public int col() {
+			return this.xcell.getColumnIndex();
+		}
+		
 		
 		public CellContext value(String str) {
 			
