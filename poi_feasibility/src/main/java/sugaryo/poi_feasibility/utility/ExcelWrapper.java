@@ -53,12 +53,14 @@ public class ExcelWrapper implements AutoCloseable {
 		public CellContext cellBreak() {
 			return this.rowBreak().colBreak();
 		}
+		
 		public CellContext rowBreak() {
-			this.sheet.setRowBreak( this.row() );
+			this.sheet.setRowBreak( this.row() - 1 ); // Excelの操作感に合わせるために１ずらす。
 			return this;
 		}
+		
 		public CellContext colBreak() {
-			this.sheet.setColumnBreak( this.col() );
+			this.sheet.setColumnBreak( this.col() - 1 ); // Excelの操作感に合わせるために１ずらす。
 			return this;
 		}
 		
@@ -93,19 +95,19 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		public RangeContext topBreak() {
-			this.sheet.setRowBreak( this.top() ); // top位置でPageBreak;
+			this.sheet.setRowBreak( this.top() - 1); // top位置でPageBreak;
 			return this;
 		}
 		public RangeContext bottomBreak() {
-			this.sheet.setRowBreak( this.bottom() + 1 ); // bottom直下でPageBreak;
+			this.sheet.setRowBreak( this.bottom() ); // bottom直下でPageBreak;
 			return this;
 		}
 		public RangeContext leftBreak() {
-			this.sheet.setColumnBreak( this.xcell1.getColumnIndex() ); // left位置でPageBreak;
+			this.sheet.setColumnBreak( this.xcell1.getColumnIndex() - 1); // left位置でPageBreak;
 			return this;
 		}
 		public RangeContext rightBreak() {
-			this.sheet.setColumnBreak( this.xcell2.getColumnIndex() + 1 ); // rightの右側でPageBreak;
+			this.sheet.setColumnBreak( this.xcell2.getColumnIndex() ); // rightの右側でPageBreak;
 			return this;
 		}
 		
