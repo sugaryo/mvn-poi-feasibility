@@ -1,11 +1,12 @@
 package sugaryo.poi_feasibility.utility;
 
 import static sugaryo.poi_feasibility.utility.PoiUtil.serialize;
+import static sugaryo.poi_feasibility.utility.PoiUtil.output;
+import static sugaryo.poi_feasibility.utility.PoiUtil.poiShiftRows;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static sugaryo.poi_feasibility.utility.PoiUtil.output;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.util.AreaReference;
@@ -138,7 +139,7 @@ public class ExcelWrapper implements AutoCloseable {
 			final int rows = row2 - row1 + 1; // 植木算
 			
 			// この領域の上に、指定個数ぶんの空行を作る（シフトして場所を開けるだけ）
-			this.sheet.shiftRows( row1, sheet.getLastRowNum(), rows * count );
+			poiShiftRows( this.sheet, row1, rows * count );
 			
 			return this;
 		}
@@ -156,7 +157,7 @@ public class ExcelWrapper implements AutoCloseable {
 			// ■シフト処理：
 			
 			// コピー先の領域を確保する。
-			this.sheet.shiftRows( row2 + 1, sheet.getLastRowNum(), rows * count );
+			poiShiftRows( this.sheet, row2 + 1, rows * count );
 			
 			
 			// ■コピー処理：
@@ -262,7 +263,7 @@ public class ExcelWrapper implements AutoCloseable {
 			}
 			
 			// ■消して空いた領域に行シフト。
-			this.sheet.shiftRows( row2 + 1, this.sheet.getLastRowNum(), -rows );
+			poiShiftRows( this.sheet ,row2 + 1, -rows );
 
 			return this;
 		}
@@ -365,7 +366,7 @@ public class ExcelWrapper implements AutoCloseable {
 	
 	
 	public ExcelWrapper shiftRows( int baseRow, int shiftSize ) {
-		this.current.shiftRows( baseRow, this.current.getLastRowNum(), shiftSize );
+		poiShiftRows( this.current, baseRow, shiftSize );
 		return this;
 	}
 	

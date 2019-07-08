@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class PoiUtil {
@@ -86,5 +88,45 @@ public class PoiUtil {
 		catch ( Exception ex ) {
 			throw new RuntimeException( ex );
 		}
+	}
+	
+	/**
+	 * @see org.apache.poi.xssf.usermodel.XSSFSheet
+	 * @see org.apache.poi.xssf.usermodel.XSSFSheet#shiftRows(int, int, int, boolean, boolean)
+	 */
+	public static class ShiftRowsOptions {
+		
+		/**
+		 * {@link XSSFSheet#shiftRows(int, int, int, boolean, boolean)}<b>::copyRowHeight.</b> {@code whether to copy the row height during the shift.}
+		 * 
+		 * @see org.apache.poi.xssf.usermodel.XSSFSheet#shiftRows(int, int, int, boolean, boolean)
+		 */
+		public static final boolean COPY_ROW_HEIGHT = true;
+		/**
+		 * {@link XSSFSheet#shiftRows(int, int, int, boolean, boolean)}<b>::resetOriginalRowHeight.</b> {@code whether to set the original row's height to the default.}
+		 * 
+		 * @see org.apache.poi.xssf.usermodel.XSSFSheet#shiftRows(int, int, int, boolean, boolean)
+		 */
+		public static final boolean RESET_ORG_ROW_HEIGHT = false; // そもそも poi の中のロジックで使ってないくさいが？
+	}
+	/**
+	 * 行シフト処理.
+	 * 
+	 * @param sheet     操作する {@link XSSFSheet} オブジェクト
+	 * @param baseRow   シフトの基準行インデックス
+	 * @param shiftSize シフトする行数
+	 * 
+	 * @see ShiftRowsOptions
+	 * @see ShiftRowsOptions#COPY_ROW_HEIGHT
+	 * @see ShiftRowsOptions#RESET_ORG_ROW_HEIGHT
+	 */
+	public static void poiShiftRows(final XSSFSheet sheet, final int baseRow, final int shiftSize) {
+		
+		// シフト量が指定されてない場合は無視。
+		if ( 0 == shiftSize ) return;
+		
+		sheet.shiftRows( baseRow, sheet.getLastRowNum(), shiftSize,
+				ShiftRowsOptions.COPY_ROW_HEIGHT,
+				ShiftRowsOptions.RESET_ORG_ROW_HEIGHT );
 	}
 }
