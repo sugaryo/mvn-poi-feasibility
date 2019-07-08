@@ -68,26 +68,26 @@ public class ExcelWrapper implements AutoCloseable {
 
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
-			final int n = row2 - row1 + 1; // 植木算
+			final int rows = row2 - row1 + 1; // 植木算
 			
 			
 			// ■先に範囲内に含まれる結合セルを解除。
 			List<CellRangeAddress> regions = this.sheet.getMergedRegions();
 			List<Integer> unmerges = new ArrayList<>();
 			for ( int i = 0; i < regions.size(); i++ ) {
-				var region = regions.get(i);
+				CellRangeAddress region = regions.get( i );
 				
 				// 行範囲内に内包している結合セルを解除。
 				// （引っ掛かってるやつも対象にして良い気がするけど、そうなるケースってそもそも名前定義の範囲が良くない）
 				if ( row1 <= region.getFirstRow() && region.getLastRow() <= row2 ) {
-					unmerges.add(i);
+					unmerges.add( i );
 				}
 			}
 			this.sheet.removeMergedRegions( unmerges );
 			
 			
 			// ■範囲内の行データを削除。（Rowが消えるのでRowオブジェクトは再度createする）
-			for ( int i = 0; i < n; i++ ) {
+			for ( int i = 0; i < rows; i++ ) {
 				int row = row1 + i;
 				var xrow = this.sheet.getRow( row );
 				// 行オブジェクトがあれば remove する。
@@ -104,43 +104,43 @@ public class ExcelWrapper implements AutoCloseable {
 
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
-			final int n = row2 - row1 + 1; // 植木算
+			final int rows = row2 - row1 + 1; // 植木算
 			
-			for ( int i = 0; i < n; i++ ) {
+			for ( int i = 0; i < rows; i++ ) {
 				int row = row1 + i;
-				var xrow = sheet.getRow( row );
+				var xrow = this.sheet.getRow( row );
 				xrow.setZeroHeight( true );
 			}
 			
 			return this;
 		}
 		
-		public RangeContext insertRows( int count ) {
+		public RangeContext insertRows( final int count ) {
 
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
-			final int n = row2 - row1 + 1; // 植木算
+			final int rows = row2 - row1 + 1; // 植木算
 			
 			// この領域の上に、指定個数ぶんの空行を作る（シフトして場所を開けるだけ）
-			this.sheet.shiftRows( row1, sheet.getLastRowNum(), n * count );
+			this.sheet.shiftRows( row1, sheet.getLastRowNum(), rows * count );
 			
 			return this;
 		}
 		
-		public RangeContext copyRows( int count ) {
+		public RangeContext copyRows( final int count ) {
 			return this.copyRows( count, true );
 		}
-		public RangeContext copyRows( int count, final boolean domerge ) {
+		public RangeContext copyRows( final int count, final boolean domerge ) {
 			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
-			final int n = row2 - row1 + 1; // 植木算
+			final int rows = row2 - row1 + 1; // 植木算
 			
 			
 			// ■シフト処理：
 			
 			// コピー先の領域を確保する。
-			this.sheet.shiftRows( row2 + 1, sheet.getLastRowNum(), n * count );
+			this.sheet.shiftRows( row2 + 1, sheet.getLastRowNum(), rows * count );
 			
 			
 			// ■コピー処理：
@@ -156,11 +156,11 @@ public class ExcelWrapper implements AutoCloseable {
 			for ( int c = 0; c < count; c++ ) {
 				
 				final int base = row2 + 1; // コピー先 dst の基準行     （コピー元領域の最終行 row2 のひとつ下）
-				final int shift = c * n;   // count ループによるシフト値（ループインデックスｃ * コピー元領域の行数ｎ）
+				final int shift = c * rows;   // count ループによるシフト値（ループインデックスｃ * コピー元領域の行数ｎ）
 				
 				
 				// ■■コピー元領域（行数ｎ）だけループして１行ずつコピーする。
-				for ( int i = 0; i < n; i++ ) {
+				for ( int i = 0; i < rows; i++ ) {
 					
 					final int src = row1 + i;         // コピー基準行
 					final int dst = base + i + shift; // コピー対象行
@@ -173,7 +173,7 @@ public class ExcelWrapper implements AutoCloseable {
 					// dy = n + shift
 					//    = n + ( c * n )
 					//    = n * ( c + 1 )    ※ c は count ループのインデックスなので (c+1) はループ回数に等しい。
-					final int dy = n + shift;
+					final int dy = rows + shift;
 					for ( CellRangeAddress srcMerge : srcMergeAreas ) {
 						
 						CellRangeAddress dstMerge = srcMerge.copy();
@@ -215,26 +215,26 @@ public class ExcelWrapper implements AutoCloseable {
 			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
-			final int n = row2 - row1 + 1; // 植木算
+			final int rows = row2 - row1 + 1; // 植木算
 			
 			
 			// ■先に範囲内に含まれる結合セルを解除。
-			var regions = this.sheet.getMergedRegions();
+			List<CellRangeAddress> regions = this.sheet.getMergedRegions();
 			List<Integer> unmerges = new ArrayList<>();
 			for ( int i = 0; i < regions.size(); i++ ) {
-				var region = regions.get(i);
+				CellRangeAddress region = regions.get( i );
 				
 				// 行範囲内に内包している結合セルを解除。
 				// （引っ掛かってるやつも対象にして良い気がするけど、そうなるケースってそもそも名前定義の範囲が良くない）
 				if ( row1 <= region.getFirstRow() && region.getLastRow() <= row2 ) {
-					unmerges.add(i);
+					unmerges.add( i );
 				}
 			}
 			this.sheet.removeMergedRegions( unmerges );
 			
 			
 			// ■範囲内の行データを削除。
-			for ( int i = 0; i < n; i++ ) {
+			for ( int i = 0; i < rows; i++ ) {
 				int row = row1 + i;
 				var xrow = this.sheet.getRow( row );
 				
@@ -246,7 +246,7 @@ public class ExcelWrapper implements AutoCloseable {
 			}
 			
 			// ■消して空いた領域に行シフト。
-			this.sheet.shiftRows( row2 + 1, this.sheet.getLastRowNum(), -n );
+			this.sheet.shiftRows( row2 + 1, this.sheet.getLastRowNum(), -rows );
 
 			return this;
 		}
