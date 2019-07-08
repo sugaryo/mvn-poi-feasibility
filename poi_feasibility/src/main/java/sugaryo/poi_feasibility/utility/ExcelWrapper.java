@@ -62,7 +62,7 @@ public class ExcelWrapper implements AutoCloseable {
 			this.xcell2 = xcell2;
 			this.sheet = xcell1.getSheet();
 		}
-
+		
 		
 		public int top() {
 			return this.xcell1.getRowIndex();
@@ -361,6 +361,12 @@ public class ExcelWrapper implements AutoCloseable {
 		if ( null == xcell ) xcell = xrow.createCell( col );
 		
 		return xcell;
+	}
+	
+	
+	public ExcelWrapper shiftRows( int baseRow, int shiftSize ) {
+		this.current.shiftRows( baseRow, this.current.getLastRowNum(), shiftSize );
+		return this;
 	}
 	
 	
