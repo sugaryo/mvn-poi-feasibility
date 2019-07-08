@@ -126,8 +126,12 @@ public class ExcelWrapper implements AutoCloseable {
 			
 			return this;
 		}
+		
 		public RangeContext copyRows( int count ) {
-
+			return this.copyRows( count, true );
+		}
+		public RangeContext copyRows( int count, final boolean domerge ) {
+			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int n = row2 - row1 + 1; // 植木算
@@ -145,7 +149,7 @@ public class ExcelWrapper implements AutoCloseable {
 			var srcMergeAreas = this.sheet
 					.getMergedRegions()
 					.stream()
-					.filter( x -> row1 <= x.getFirstRow() && x.getLastRow() <= row2 )
+					.filter( x -> domerge && row1 <= x.getFirstRow() && x.getLastRow() <= row2 )
 					.toArray( CellRangeAddress[]::new );
 			
 			// 指定回数（count）コピーを繰り返す。
@@ -165,28 +169,28 @@ public class ExcelWrapper implements AutoCloseable {
 				}
 				
 				// ■■コピー元領域にあった結合セル範囲にあわせて MergedCell を作成する。
-				
-				// dy = n + shift
-				//    = n + ( c * n )
-				//    = n * ( c + 1 )    ※ c は count ループのインデックスなので (c+1) はループ回数に等しい。
-				final int dy = n + shift;
-				for ( CellRangeAddress srcMerge : srcMergeAreas ) {
-
-					CellRangeAddress dstMerge = srcMerge.copy();
-					final int mr1 = dstMerge.getFirstRow();
-					final int mr2 = dstMerge.getLastRow();
-					
-					// 列位置は変わらないので、行位置だけ補正してやる。
-					dstMerge.setFirstRow( mr1 + dy );
-					dstMerge.setLastRow( mr2 + dy );
-					this.sheet.addMergedRegion( dstMerge );
+				if ( domerge ) {
+					// dy = n + shift
+					//    = n + ( c * n )
+					//    = n * ( c + 1 )    ※ c は count ループのインデックスなので (c+1) はループ回数に等しい。
+					final int dy = n + shift;
+					for ( CellRangeAddress srcMerge : srcMergeAreas ) {
+						
+						CellRangeAddress dstMerge = srcMerge.copy();
+						final int mr1 = dstMerge.getFirstRow();
+						final int mr2 = dstMerge.getLastRow();
+						
+						// 列位置は変わらないので、行位置だけ補正してやる。
+						dstMerge.setFirstRow( mr1 + dy );
+						dstMerge.setLastRow( mr2 + dy );
+						this.sheet.addMergedRegion( dstMerge );
+					}
 				}
 			}
 			
 			
 			return this;
 		}
-
 		private void copyRow( final int src, final int dst ) {
 			var srcRow = this.sheet.getRow( src );
 			var dstRow = this.sheet.createRow( dst );
