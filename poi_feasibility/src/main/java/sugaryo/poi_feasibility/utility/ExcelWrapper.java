@@ -64,6 +64,22 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 
 		
+		public int top() {
+			return this.xcell1.getRowIndex();
+		}
+		public int bottom() {
+			return this.xcell2.getRowIndex();
+		}
+		
+		public boolean isSingleRow() {
+			return this.top() == this.bottom();
+		}
+		public boolean isMultipleRow() {
+			return this.top() != this.bottom();
+		}
+		
+		
+		
 		public RangeContext clearRows() {
 
 			final int row1 = this.xcell1.getRowIndex();
