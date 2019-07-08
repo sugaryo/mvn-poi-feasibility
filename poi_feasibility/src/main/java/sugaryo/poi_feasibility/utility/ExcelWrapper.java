@@ -45,8 +45,20 @@ public class ExcelWrapper implements AutoCloseable {
 		
 		
 		public CellContext value(String str) {
-			
 			this.xcell.setCellValue( str );
+			return this;
+		}
+		
+		
+		public CellContext cellBreak() {
+			return this.rowBreak().colBreak();
+		}
+		public CellContext rowBreak() {
+			this.sheet.setRowBreak( this.row() );
+			return this;
+		}
+		public CellContext colBreak() {
+			this.sheet.setColumnBreak( this.col() );
 			return this;
 		}
 		
@@ -56,8 +68,8 @@ public class ExcelWrapper implements AutoCloseable {
 	public static class RangeContext {
 		
 		private final XSSFSheet sheet;
-		private final XSSFCell xcell1;
-		private final XSSFCell xcell2;
+		private final XSSFCell xcell1; // rectangleの左上相当セル
+		private final XSSFCell xcell2; // rectangleの右下相当セル
 		
 		public RangeContext(XSSFCell xcell1, XSSFCell xcell2) {
 			this.xcell1 = xcell1;
@@ -80,6 +92,22 @@ public class ExcelWrapper implements AutoCloseable {
 			return this.top() != this.bottom();
 		}
 		
+		public RangeContext topBreak() {
+			this.sheet.setRowBreak( this.top() ); // top位置でPageBreak;
+			return this;
+		}
+		public RangeContext bottomBreak() {
+			this.sheet.setRowBreak( this.bottom() + 1 ); // bottom直下でPageBreak;
+			return this;
+		}
+		public RangeContext leftBreak() {
+			this.sheet.setColumnBreak( this.xcell1.getColumnIndex() ); // left位置でPageBreak;
+			return this;
+		}
+		public RangeContext rightBreak() {
+			this.sheet.setColumnBreak( this.xcell2.getColumnIndex() + 1 ); // rightの右側でPageBreak;
+			return this;
+		}
 		
 		
 		public RangeContext clearRows() {
