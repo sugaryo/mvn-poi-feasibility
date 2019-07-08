@@ -3,6 +3,7 @@ package sugaryo.poi_feasibility.utility;
 import static sugaryo.poi_feasibility.utility.PoiUtil.serialize;
 import static sugaryo.poi_feasibility.utility.PoiUtil.output;
 import static sugaryo.poi_feasibility.utility.PoiUtil.poiShiftRows;
+import static sugaryo.poi_feasibility.utility.PoiUtil.poiCopyRow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,7 +183,7 @@ public class ExcelWrapper implements AutoCloseable {
 					final int src = row1 + i;         // コピー基準行
 					final int dst = base + i + shift; // コピー対象行
 					
-					this.copyRow( src, dst );
+					poiCopyRow( this.sheet, src, dst );
 				}
 				
 				// ■■コピー元領域にあった結合セル範囲にあわせて MergedCell を作成する。
@@ -207,25 +208,6 @@ public class ExcelWrapper implements AutoCloseable {
 			
 			
 			return this;
-		}
-		private void copyRow( final int src, final int dst ) {
-			var srcRow = this.sheet.getRow( src );
-			var dstRow = this.sheet.createRow( dst );
-			
-			// セルを取得。
-			final int col1 = srcRow.getFirstCellNum();
-			final int col2 = srcRow.getLastCellNum();
-			for ( int col = col1; col <= col2; col++ ) {
-				
-				// コピー元行にセルがあれば対応位置にセルを作ってコピー。
-				var srcCell = srcRow.getCell( col );
-				if ( null != srcCell ) {
-					
-					var dstCell = dstRow.createCell( col );
-					dstCell.setCellStyle( srcCell.getCellStyle() );
-					//TODO：cell-value のコピー処理も追加。
-				}
-			}
 		}
 		
 		public RangeContext deleteRows() {

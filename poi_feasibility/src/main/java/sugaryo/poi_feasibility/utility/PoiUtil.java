@@ -90,6 +90,34 @@ public class PoiUtil {
 		}
 	}
 	
+
+	/**
+	 * 行コピー処理.
+	 * 
+	 * @param sheet 操作する {@link XSSFSheet} オブジェクト
+	 * @param src   コピー元行インデックス
+	 * @param dst   コピー先行インデックス
+	 */
+	public static void poiCopyRow( final XSSFSheet sheet, final int src, final int dst ) {
+		var srcRow = sheet.getRow( src );
+		var dstRow = sheet.createRow( dst );
+		
+		// セルを取得。
+		final int col1 = srcRow.getFirstCellNum();
+		final int col2 = srcRow.getLastCellNum();
+		for ( int col = col1; col <= col2; col++ ) {
+			
+			// コピー元行にセルがあれば対応位置にセルを作ってコピー。
+			var srcCell = srcRow.getCell( col );
+			if ( null != srcCell ) {
+				
+				var dstCell = dstRow.createCell( col );
+				dstCell.setCellStyle( srcCell.getCellStyle() );
+				//TODO：cell-value のコピー処理も追加。
+			}
+		}
+	}
+	
 	/**
 	 * @see org.apache.poi.xssf.usermodel.XSSFSheet
 	 * @see org.apache.poi.xssf.usermodel.XSSFSheet#shiftRows(int, int, int, boolean, boolean)
