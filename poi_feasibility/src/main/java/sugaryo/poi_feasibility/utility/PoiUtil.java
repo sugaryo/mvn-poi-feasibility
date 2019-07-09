@@ -120,6 +120,7 @@ public class PoiUtil {
 	 * @see ShiftRowsOptions
 	 * @see ShiftRowsOptions#COPY_ROW_HEIGHT
 	 * @see ShiftRowsOptions#RESET_ORG_ROW_HEIGHT
+	 * @see org.apache.poi.xssf.usermodel.XSSFSheet#shiftRows(int, int, int, boolean, boolean)
 	 */
 	public static void poiShiftRows(final XSSFSheet sheet, final int baseRow, final int shiftSize) {
 		
@@ -129,5 +130,39 @@ public class PoiUtil {
 		sheet.shiftRows( baseRow, sheet.getLastRowNum(), shiftSize,
 				ShiftRowsOptions.COPY_ROW_HEIGHT,
 				ShiftRowsOptions.RESET_ORG_ROW_HEIGHT );
+	}
+	
+	/**
+	 * 行非表示処理.
+	 * 
+	 * @param sheet     操作する {@link XSSFSheet} オブジェクト
+	 * @param baseRow   シフトの基準行インデックス
+	 * @param hideSize  非表示にする行数
+	 * @param withClear データを消してから非表示にするオプション
+	 * 
+	 * @see org.apache.poi.xssf.usermodel.XSSFRow#setHeight(short)
+	 * @see org.apache.poi.xssf.usermodel.XSSFRow#setZeroHeight(boolean)
+	 */
+	public static void poiHideRows(final XSSFSheet sheet, final int baseRow, final int hideSize, final boolean withClear ) {
+		
+		// 非表示量が指定されていない場合は無視。
+		if ( hideSize < 0 ) return;
+		
+		// 基準行から指定行数を非表示にする。
+		for ( int i = 0; i < hideSize; i++ ) {
+			int row = baseRow + i;
+			var xrow = withClear 
+					? sheet.createRow( row ) // CreateRowし直せば既存のデータが消える。
+					: sheet.getRow( row );   // 既存のデータを残す場合は普通にGetRowする。
+			
+			// データが無いとRowオブジェクトが存在しない事もあるのでRowオブジェクトを生成。
+			if ( null == xrow ) {
+				xrow = sheet.createRow( row );
+			}
+			
+			// 高さゼロに設定して非表示化。
+			xrow.setHeight( (short)0 );
+			xrow.setZeroHeight( true );
+		}
 	}
 }

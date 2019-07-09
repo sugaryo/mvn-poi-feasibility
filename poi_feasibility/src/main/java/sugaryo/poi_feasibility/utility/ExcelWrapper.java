@@ -3,6 +3,7 @@ package sugaryo.poi_feasibility.utility;
 import static sugaryo.poi_feasibility.utility.PoiUtil.serialize;
 import static sugaryo.poi_feasibility.utility.PoiUtil.output;
 import static sugaryo.poi_feasibility.utility.PoiUtil.poiShiftRows;
+import static sugaryo.poi_feasibility.utility.PoiUtil.poiHideRows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -363,8 +364,16 @@ public class ExcelWrapper implements AutoCloseable {
 	}
 	
 	
-	public ExcelWrapper shiftRows( int baseRow, int shiftSize ) {
+	public ExcelWrapper shiftRows( final int baseRow, final int shiftSize ) {
 		poiShiftRows( this.current, baseRow, shiftSize );
+		return this;
+	}
+	
+	public ExcelWrapper hideRows( final int baseRow, final int hideSize ) {
+		return this.hideRows( baseRow, hideSize, false );
+	}
+	public ExcelWrapper hideRows( final int baseRow, final int hideSize, final boolean withClear ) {
+		poiHideRows( this.current, baseRow, hideSize, withClear );
 		return this;
 	}
 	
