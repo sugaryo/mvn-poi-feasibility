@@ -191,11 +191,17 @@ public class ExcelWrapper implements AutoCloseable {
 			return this;
 		}
 		
+		private static final CellCopyPolicy DEFAULT_COPY_POLICY = new CellCopyPolicy.Builder()
+				.rowHeight( true )
+				.cellStyle( true )
+				.cellValue( true )
+				.mergedRegions( true )
+				.build(); 
+		
 		public RangeContext copyRows( final int count ) {
-			return this.copyRows( count, true );
+			return this.copyRows( count, DEFAULT_COPY_POLICY );
 		}
-		public RangeContext copyRows( final int count, 
-				@Deprecated final boolean domerge ) {
+		public RangeContext copyRows( final int count, final CellCopyPolicy policy ) {
 			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
@@ -206,13 +212,6 @@ public class ExcelWrapper implements AutoCloseable {
 			poiShiftRows( this.sheet, row2 + 1, rows * count );
 			
 			// ■コピー処理：
-			var policy = new CellCopyPolicy.Builder()
-					.rowHeight( true )
-					.cellStyle( true )
-					.cellValue( true )
-					.mergedRegions( true )
-					.build();
-			
 			for ( int n = 0; n < count; n++ ) {
 				
 				final int shift = n * rows;
