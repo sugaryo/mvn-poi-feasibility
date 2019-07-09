@@ -63,8 +63,6 @@ public class ExcelWrapper implements AutoCloseable {
 			this.sheet.setColumnBreak( this.col() - 1 ); // Excelの操作感に合わせるために１ずらす。
 			return this;
 		}
-		
-		// TODO：他にもユーティリティを追加。
 	}
 	
 	public static class RangeContext {
@@ -80,13 +78,30 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		
+		public int rows() {
+			final int row1 = this.xcell1.getRowIndex();
+			final int row2 = this.xcell2.getRowIndex();
+			return row2 - row1 + 1;
+		}
+		public int cols() {
+			final int col1 = this.xcell1.getColumnIndex();
+			final int col2 = this.xcell2.getColumnIndex();
+			return col2 - col1 + 1;
+		}
+		
 		public int top() {
 			return this.xcell1.getRowIndex();
 		}
 		public int bottom() {
 			return this.xcell2.getRowIndex();
 		}
-		
+		public int left() {
+			return this.xcell1.getColumnIndex();
+		}
+		public int right() {
+			return this.xcell2.getColumnIndex();
+		}
+				
 		public boolean isSingleRow() {
 			return this.top() == this.bottom();
 		}
@@ -95,7 +110,7 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		public RangeContext topBreak() {
-			this.sheet.setRowBreak( this.top() - 1); // top位置でPageBreak;
+			this.sheet.setRowBreak( this.top() - 1 ); // top位置でPageBreak;
 			return this;
 		}
 		public RangeContext bottomBreak() {
@@ -103,7 +118,7 @@ public class ExcelWrapper implements AutoCloseable {
 			return this;
 		}
 		public RangeContext leftBreak() {
-			this.sheet.setColumnBreak( this.xcell1.getColumnIndex() - 1); // left位置でPageBreak;
+			this.sheet.setColumnBreak( this.xcell1.getColumnIndex() - 1 ); // left位置でPageBreak;
 			return this;
 		}
 		public RangeContext rightBreak() {
@@ -149,7 +164,7 @@ public class ExcelWrapper implements AutoCloseable {
 			return this;
 		}
 		public RangeContext hideRows() {
-
+			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
 			final int rows = row2 - row1 + 1; // 植木算
@@ -203,7 +218,7 @@ public class ExcelWrapper implements AutoCloseable {
 			// 指定回数（count）コピーを繰り返す。
 			for ( int c = 0; c < count; c++ ) {
 				
-				final int base = row2 + 1; // コピー先 dst の基準行     （コピー元領域の最終行 row2 のひとつ下）
+				final int base = row2 + 1;    // コピー先 dst の基準行     （コピー元領域の最終行 row2 のひとつ下）
 				final int shift = c * rows;   // count ループによるシフト値（ループインデックスｃ * コピー元領域の行数ｎ）
 				
 				
