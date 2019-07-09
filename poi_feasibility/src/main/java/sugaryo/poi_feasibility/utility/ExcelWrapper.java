@@ -67,74 +67,74 @@ public class ExcelWrapper implements AutoCloseable {
 	}
 	
 	public static class RangeContext {
-		
+
 		private final XSSFSheet sheet;
-		
-		//TODO：ここCellである必要あるか？CellReferenceにした方が良いのでは。
-		
-		private final XSSFCell xcell1; // rectangleの左上相当セル
-		private final XSSFCell xcell2; // rectangleの右下相当セル
-		
-		public RangeContext(XSSFCell xcell1, XSSFCell xcell2) {
-			this.xcell1 = xcell1;
-			this.xcell2 = xcell2;
-			this.sheet = xcell1.getSheet();
+		private final CellReference ref1; // rectangleの左上相当セル
+		private final CellReference ref2; // rectangleの右下相当セル
+
+		public RangeContext(XSSFSheet sheet, CellReference ref1, CellReference ref2) {
+			this.sheet = sheet;
+			this.ref1 = ref1;
+			this.ref2 = ref2;
 		}
-		
 		
 		public int rows() {
-			final int row1 = this.xcell1.getRowIndex();
-			final int row2 = this.xcell2.getRowIndex();
-			return row2 - row1 + 1;
+			final int row1 = this.ref1.getRow();
+			final int row2 = this.ref2.getRow();
+			return row2 - row1 + 1; // 植木算
 		}
 		public int cols() {
-			final int col1 = this.xcell1.getColumnIndex();
-			final int col2 = this.xcell2.getColumnIndex();
-			return col2 - col1 + 1;
+			final int col1 = this.ref1.getCol();
+			final int col2 = this.ref2.getCol();
+			return col2 - col1 + 1; // 植木算
 		}
 		
 		public int top() {
-			return this.xcell1.getRowIndex();
+			return this.ref1.getRow();
 		}
 		public int bottom() {
-			return this.xcell2.getRowIndex();
+			return this.ref2.getRow();
 		}
 		public int left() {
-			return this.xcell1.getColumnIndex();
+			return this.ref1.getCol();
 		}
 		public int right() {
-			return this.xcell2.getColumnIndex();
+			return this.ref2.getCol();
 		}
-				
+		
 		public boolean isSingleRow() {
 			return this.top() == this.bottom();
 		}
 		public boolean isMultipleRow() {
 			return this.top() != this.bottom();
 		}
-		
+
 		public RangeContext topBreak() {
 			this.sheet.setRowBreak( this.top() - 1 ); // top位置でPageBreak;
 			return this;
 		}
+		
 		public RangeContext bottomBreak() {
 			this.sheet.setRowBreak( this.bottom() ); // bottom直下でPageBreak;
 			return this;
 		}
+		
 		public RangeContext leftBreak() {
-			this.sheet.setColumnBreak( this.xcell1.getColumnIndex() - 1 ); // left位置でPageBreak;
+			this.sheet.setColumnBreak( this.ref1.getCol() - 1 ); // left位置でPageBreak;
 			return this;
 		}
+		
 		public RangeContext rightBreak() {
-			this.sheet.setColumnBreak( this.xcell2.getColumnIndex() ); // rightの右側でPageBreak;
+			this.sheet.setColumnBreak( this.ref2.getCol() ); // rightの右側でPageBreak;
 			return this;
 		}
+		
 		
 		
 		public RangeContext clearRows() {
 
-			final int row1 = this.xcell1.getRowIndex();
-			final int row2 = this.xcell2.getRowIndex();
+			final int row1 = this.ref1.getRow();
+			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
 			
 			
@@ -168,9 +168,9 @@ public class ExcelWrapper implements AutoCloseable {
 			return this;
 		}
 		public RangeContext hideRows() {
-			
-			final int row1 = this.xcell1.getRowIndex();
-			final int row2 = this.xcell2.getRowIndex();
+
+			final int row1 = this.ref1.getRow();
+			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
 			
 			for ( int i = 0; i < rows; i++ ) {
@@ -184,8 +184,8 @@ public class ExcelWrapper implements AutoCloseable {
 		
 		public RangeContext insertRows( final int count ) {
 
-			final int row1 = this.xcell1.getRowIndex();
-			final int row2 = this.xcell2.getRowIndex();
+			final int row1 = this.ref1.getRow();
+			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
 			
 			// この領域の上に、指定個数ぶんの空行を作る（シフトして場所を開けるだけ）
@@ -205,9 +205,9 @@ public class ExcelWrapper implements AutoCloseable {
 			return this.copyRows( count, DEFAULT_COPY_POLICY );
 		}
 		public RangeContext copyRows( final int count, final CellCopyPolicy policy ) {
-			
-			final int row1 = this.xcell1.getRowIndex();
-			final int row2 = this.xcell2.getRowIndex();
+
+			final int row1 = this.ref1.getRow();
+			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
 			
 			
@@ -227,9 +227,9 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		public RangeContext deleteRows() {
-			
-			final int row1 = this.xcell1.getRowIndex();
-			final int row2 = this.xcell2.getRowIndex();
+
+			final int row1 = this.ref1.getRow();
+			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
 			
 			
@@ -261,7 +261,7 @@ public class ExcelWrapper implements AutoCloseable {
 			}
 			
 			// ■消して空いた領域に行シフト。
-			poiShiftRows( this.sheet ,row2 + 1, -rows );
+			poiShiftRows( this.sheet, row2 + 1, -rows );
 
 			return this;
 		}
@@ -318,32 +318,32 @@ public class ExcelWrapper implements AutoCloseable {
 	}
 	
 
-	public RangeContext range( int r1, int c1, int r2, int c2 ) {
 
-		XSSFCell xcell1 = this.xssfCell( r1, c1 );
-		XSSFCell xcell2 = this.xssfCell( r2, c2 );
-		return new RangeContext( xcell1, xcell2 );
+	public RangeContext range(int r1, int c1, int r2, int c2) {
+		
+		return new RangeContext( this.current,
+				new CellReference( this.current.getSheetName(), r1, c1, false, false ),
+				new CellReference( this.current.getSheetName() ,r2, c2, false, false ) );
 	}
 	
 	public RangeContext range(String name) {
 		
-		// 名前定義から [SheetName, Row, Column] を取得。
 		var xname = this.book.getName( name );
 		var ref = new AreaReference( xname.getRefersToFormula(), SpreadsheetVersion.EXCEL2007 );
 		
-		
 		final String sheetname = xname.getSheetName();
-		this.sheet( sheetname );
+		this.sheet( sheetname ); // シート移動
 		
-		XSSFCell xcell1 = this.xssfCell( ref.getFirstCell() );
-		XSSFCell xcell2 = this.xssfCell( ref.getLastCell() );
-		return new RangeContext( xcell1, xcell2 );
+		return new RangeContext( this.current,
+				ref.getFirstCell(),
+				ref.getLastCell() );
 	}
-
 	
 	
+	@SuppressWarnings("unused")
+	@Deprecated
 	private XSSFCell xssfCell(CellReference ref) {
-		
+
 		// TODO：厳密指定するオプションを追加したほうが良いか？
 		int row = ref.isRowAbsolute() ? ref.getRow() : 0;
 		int col = ref.isColAbsolute() ? ref.getCol() : 0;
