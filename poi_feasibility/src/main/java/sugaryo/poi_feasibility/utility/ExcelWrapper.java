@@ -3,13 +3,13 @@ package sugaryo.poi_feasibility.utility;
 import static sugaryo.poi_feasibility.utility.PoiUtil.serialize;
 import static sugaryo.poi_feasibility.utility.PoiUtil.output;
 import static sugaryo.poi_feasibility.utility.PoiUtil.poiShiftRows;
-import static sugaryo.poi_feasibility.utility.PoiUtil.poiCopyRow;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.CellCopyPolicy;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
@@ -17,6 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 
 
 public class ExcelWrapper implements AutoCloseable {
@@ -193,7 +194,8 @@ public class ExcelWrapper implements AutoCloseable {
 		public RangeContext copyRows( final int count ) {
 			return this.copyRows( count, true );
 		}
-		public RangeContext copyRows( final int count, final boolean domerge ) {
+		public RangeContext copyRows( final int count, 
+				@Deprecated final boolean domerge ) {
 			
 			final int row1 = this.xcell1.getRowIndex();
 			final int row2 = this.xcell2.getRowIndex();
@@ -201,56 +203,23 @@ public class ExcelWrapper implements AutoCloseable {
 			
 			
 			// ■シフト処理：
-			
-			// コピー先の領域を確保する。
 			poiShiftRows( this.sheet, row2 + 1, rows * count );
 			
-			
 			// ■コピー処理：
+			var policy = new CellCopyPolicy.Builder()
+					.rowHeight( true )
+					.cellStyle( true )
+					.cellValue( true )
+					.mergedRegions( true )
+					.build();
 			
-			// コピー元行に内包する結合セル範囲を抽出する。
-			var srcMergeAreas = this.sheet
-					.getMergedRegions()
-					.stream()
-					.filter( x -> domerge && row1 <= x.getFirstRow() && x.getLastRow() <= row2 )
-					.toArray( CellRangeAddress[]::new );
-			
-			// 指定回数（count）コピーを繰り返す。
-			for ( int c = 0; c < count; c++ ) {
+			for ( int n = 0; n < count; n++ ) {
 				
-				final int base = row2 + 1;    // コピー先 dst の基準行     （コピー元領域の最終行 row2 のひとつ下）
-				final int shift = c * rows;   // count ループによるシフト値（ループインデックスｃ * コピー元領域の行数ｎ）
+				final int shift = n * rows;
+				final int dest = row2 + 1 + shift;
 				
-				
-				// ■■コピー元領域（行数ｎ）だけループして１行ずつコピーする。
-				for ( int i = 0; i < rows; i++ ) {
-					
-					final int src = row1 + i;         // コピー基準行
-					final int dst = base + i + shift; // コピー対象行
-					
-					poiCopyRow( this.sheet, src, dst );
-				}
-				
-				// ■■コピー元領域にあった結合セル範囲にあわせて MergedCell を作成する。
-				if ( domerge ) {
-					// dy = n + shift
-					//    = n + ( c * n )
-					//    = n * ( c + 1 )    ※ c は count ループのインデックスなので (c+1) はループ回数に等しい。
-					final int dy = rows + shift;
-					for ( CellRangeAddress srcMerge : srcMergeAreas ) {
-						
-						CellRangeAddress dstMerge = srcMerge.copy();
-						final int mr1 = dstMerge.getFirstRow();
-						final int mr2 = dstMerge.getLastRow();
-						
-						// 列位置は変わらないので、行位置だけ補正してやる。
-						dstMerge.setFirstRow( mr1 + dy );
-						dstMerge.setLastRow( mr2 + dy );
-						this.sheet.addMergedRegion( dstMerge );
-					}
-				}
+				this.sheet.copyRows( row1, row2, dest, policy );
 			}
-			
 			
 			return this;
 		}
