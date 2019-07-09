@@ -69,6 +69,9 @@ public class ExcelWrapper implements AutoCloseable {
 	public static class RangeContext {
 		
 		private final XSSFSheet sheet;
+		
+		//TODO：ここCellである必要あるか？CellReferenceにした方が良いのでは。
+		
 		private final XSSFCell xcell1; // rectangleの左上相当セル
 		private final XSSFCell xcell2; // rectangleの右下相当セル
 		
