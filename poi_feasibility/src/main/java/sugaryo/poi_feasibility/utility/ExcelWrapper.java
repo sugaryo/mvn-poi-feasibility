@@ -174,11 +174,7 @@ public class ExcelWrapper implements AutoCloseable {
 			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
 			
-			for ( int i = 0; i < rows; i++ ) {
-				int row = row1 + i;
-				var xrow = this.sheet.getRow( row );
-				xrow.setZeroHeight( true );
-			}
+			poiHideRows( this.sheet, row1, rows, false );
 			
 			return this;
 		}
