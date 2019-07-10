@@ -363,6 +363,9 @@ public class ExcelWrapper implements AutoCloseable {
 		
 		// 名前定義から [SheetName, Row, Column] を取得。
 		var xname = this.book.getName( name );
+		
+		// TODO：指定した名前定義が無かった場合の動作オプション（例外 or NOP代替）を考える。
+		
 		var ref = new CellReference( xname.getRefersToFormula() );
 		
 		final String sheetname = ref.getSheetName();
