@@ -22,7 +22,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
 public class ExcelWrapper implements AutoCloseable {
-	
+
+	private static final CellCopyPolicy DEFAULT_COPY_POLICY = new CellCopyPolicy.Builder()
+			.rowHeight( true )
+			.cellStyle( true )
+			.cellValue( true )
+			.mergedRegions( true )
+			.build(); 
 	
 	private final XSSFWorkbook book;
 	
@@ -191,12 +197,6 @@ public class ExcelWrapper implements AutoCloseable {
 			return this;
 		}
 		
-		private static final CellCopyPolicy DEFAULT_COPY_POLICY = new CellCopyPolicy.Builder()
-				.rowHeight( true )
-				.cellStyle( true )
-				.cellValue( true )
-				.mergedRegions( true )
-				.build(); 
 		
 		public RangeContext copyRows( final int count ) {
 			return this.copyRows( count, DEFAULT_COPY_POLICY );
@@ -370,6 +370,37 @@ public class ExcelWrapper implements AutoCloseable {
 	}
 	public ExcelWrapper hideRows( final int baseRow, final int hideSize, final boolean withClear ) {
 		poiHideRows( this.current, baseRow, hideSize, withClear );
+		return this;
+	}
+	
+	
+	
+	public ExcelWrapper copyRows( final int rowSrcTop, final int rowSrcBottom ) {
+		return this.copyRows( rowSrcTop, rowSrcBottom, rowSrcBottom + 1 );
+	}
+	public ExcelWrapper copyRows( final int rowSrcTop, final int rowSrcBottom, final int rowDst ) {
+		return this.copyRows( rowSrcTop, rowSrcBottom, rowDst, 1 );
+	}
+	public ExcelWrapper copyRows( final int rowSrcTop, final int rowSrcBottom, final int rowDst, final int count ) {
+		return this.copyRows( rowSrcTop, rowSrcBottom, rowDst, count, DEFAULT_COPY_POLICY );
+	}
+	public ExcelWrapper copyRows( final int rowSrcTop, final int rowSrcBottom, final int rowDst, final int count, final CellCopyPolicy policy ) {
+
+		final int rows = rowSrcBottom - rowSrcTop + 1; // 植木算
+		
+		
+		// ■シフト処理：
+		poiShiftRows( this.current, rowDst, rows * count );
+		
+		// ■コピー処理：
+		for ( int n = 0; n < count; n++ ) {
+			
+			final int shift = n * rows;
+			final int dest = rowDst + shift;
+			
+			this.current.copyRows( rowSrcTop, rowSrcBottom, dest, policy );
+		}
+		
 		return this;
 	}
 	
