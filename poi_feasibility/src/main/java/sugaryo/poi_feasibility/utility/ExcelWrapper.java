@@ -76,15 +76,19 @@ public class ExcelWrapper implements AutoCloseable {
 	public static class RangeContext {
 
 		private final XSSFSheet sheet;
-		private final CellReference ref1; // rectangleの左上相当セル
-		private final CellReference ref2; // rectangleの右下相当セル
+		private final CellReference ref1; // 基準側：rectangleの左上相当セル
+		private final CellReference ref2; // 終点側：rectangleの右下相当セル
 		
+		// ctor
 		private RangeContext(XSSFSheet sheet, CellReference ref1, CellReference ref2) {
 			this.sheet = sheet;
 			this.ref1 = ref1;
 			this.ref2 = ref2;
 		}
-				
+		
+		
+		// readonly-prop;
+		
 		public int rows() {
 			final int row1 = this.ref1.getRow();
 			final int row2 = this.ref2.getRow();
@@ -116,6 +120,9 @@ public class ExcelWrapper implements AutoCloseable {
 			return this.top() != this.bottom();
 		}
 		
+		
+		// page-break-utility;
+
 		public RangeContext topBreak() {
 			this.sheet.setRowBreak( this.top() - 1 ); // top位置でPageBreak;
 			return this;
@@ -137,6 +144,7 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		
+		// row-level-utility
 		
 		public RangeContext clearRows() {
 
@@ -262,6 +270,41 @@ public class ExcelWrapper implements AutoCloseable {
 
 			return this;
 		}
+		
+		
+		// immutable-class-utility;
+		
+		/**
+		 * 領域の平行移動.
+		 * 
+		 * @param dr 行変位量
+		 * @param dc 列変位量
+		 * @return 変位量を適合した新しい {@link RangeContext} オブジェクト
+		 */
+		public RangeContext move(int dr, int dc) {
+			if ( 0 == dr && 0 == dc ) return this;
+			
+			// 基点・終点ともに同僚移動させる（単純な平行移動）
+			var next1 = new CellReference( this.ref1.getRow() + dr, this.ref1.getCol() + dc );
+			var next2 = new CellReference( this.ref2.getRow() + dr, this.ref2.getCol() + dc );
+			return new RangeContext( this.sheet, next1, next2 );
+		}
+		
+		/**
+		 * 領域の拡張.
+		 * 
+		 * @param dr 行変位量
+		 * @param dc 列変位量
+		 * @return 変位量を適合した新しい {@link RangeContext} オブジェクト
+		 */
+		public RangeContext fat(int dr, int dc) {
+			if ( 0 == dr && 0 == dc ) return this;
+			
+			// 基準側は移動させず、終点側を移動させる。
+			var next1 = new CellReference( this.ref1.getRow() + 0, this.ref1.getCol() + 0 );
+			var next2 = new CellReference( this.ref2.getRow() + dr, this.ref2.getCol() + dc );
+			return new RangeContext( this.sheet, next1, next2 );
+		}
 	}
 	
 	
@@ -318,9 +361,11 @@ public class ExcelWrapper implements AutoCloseable {
 
 	public RangeContext range(int r1, int c1, int r2, int c2) {
 		
+		// TODO：一応判定式入れておいた方が良いか。
+		
 		return new RangeContext( this.current,
 				new CellReference( this.current.getSheetName(), r1, c1, false, false ),
-				new CellReference( this.current.getSheetName() ,r2, c2, false, false ) );
+				new CellReference( this.current.getSheetName(), r2, c2, false, false ) );
 	}
 	
 	public RangeContext range(String name) {
