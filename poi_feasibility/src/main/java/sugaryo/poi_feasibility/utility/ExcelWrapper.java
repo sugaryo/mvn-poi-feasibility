@@ -78,13 +78,13 @@ public class ExcelWrapper implements AutoCloseable {
 		private final XSSFSheet sheet;
 		private final CellReference ref1; // rectangleの左上相当セル
 		private final CellReference ref2; // rectangleの右下相当セル
-
-		public RangeContext(XSSFSheet sheet, CellReference ref1, CellReference ref2) {
+		
+		private RangeContext(XSSFSheet sheet, CellReference ref1, CellReference ref2) {
 			this.sheet = sheet;
 			this.ref1 = ref1;
 			this.ref2 = ref2;
 		}
-		
+				
 		public int rows() {
 			final int row1 = this.ref1.getRow();
 			final int row2 = this.ref2.getRow();
@@ -115,7 +115,7 @@ public class ExcelWrapper implements AutoCloseable {
 		public boolean isMultipleRow() {
 			return this.top() != this.bottom();
 		}
-
+		
 		public RangeContext topBreak() {
 			this.sheet.setRowBreak( this.top() - 1 ); // top位置でPageBreak;
 			return this;
