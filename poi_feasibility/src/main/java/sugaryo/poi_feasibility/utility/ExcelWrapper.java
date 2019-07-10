@@ -330,7 +330,23 @@ public class ExcelWrapper implements AutoCloseable {
 		return this;
 	}
 	
-
+	
+	public ExcelWrapper header(String left, String center, String right) {
+		var header = this.current.getHeader();
+		if ( null != left ) header.setLeft( left );
+		if ( null != center ) header.setCenter( center );
+		if ( null != right ) header.setRight( right );
+		return this;
+	}
+	public ExcelWrapper footer(String left, String center, String right) {
+		var footer = this.current.getFooter();
+		if ( null != left ) footer.setLeft( left );
+		if ( null != center ) footer.setCenter( center );
+		if ( null != right ) footer.setRight( right );
+		return this;
+	}
+	
+	
 	public boolean exists(String name) {
 		return null != this.book.getName( name );
 	}
