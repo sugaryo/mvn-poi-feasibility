@@ -194,7 +194,9 @@ public class ExcelWrapper implements AutoCloseable {
 		}
 		
 		public RangeContext insertRows( final int count ) {
-
+			
+			if ( count <= 0 ) return this;
+			
 			final int row1 = this.ref1.getRow();
 			final int row2 = this.ref2.getRow();
 			final int rows = row2 - row1 + 1; // 植木算
