@@ -471,6 +471,23 @@ public class ExcelWrapper implements AutoCloseable {
 	}
 	
 	
+	public ExcelWrapper lock(String password) {
+		return this.lock( password, false );
+	}
+	
+	public ExcelWrapper lock(String password, boolean all) {
+		if ( !all ) {
+			this.current.protectSheet( password );
+		}
+		else {
+			for ( var sheet : this.book ) {
+				sheet.protectSheet( password );
+			}
+		}
+		return this;
+	}
+	
+	
 	
 	public byte[] binary() {
 		return serialize( this.book );

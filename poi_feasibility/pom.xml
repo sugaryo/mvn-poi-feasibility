@@ -38,6 +38,12 @@
 			<version>3.17</version>
 		</dependency>
 
+		<dependency>
+			<!-- poiのSheetパスワードで必要 -->
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.1</version>
+		</dependency>
 
 	</dependencies>
 </project>
